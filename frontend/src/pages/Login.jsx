@@ -70,8 +70,14 @@ const Login = () => {
     };
 
     const getLandingPage = (userRole) => {
-        // All users go to the landing page after login
-        return '/home';
+        // Route users based on their role
+        if (userRole === 'teacher') {
+            return '/dashboard';
+        } else if (userRole === 'student') {
+            return '/library';
+        } else {
+            return '/library'; // visitor goes to library
+        }
     };
 
     const handleChange = (e) => {
