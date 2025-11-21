@@ -40,6 +40,22 @@ app.use(
 
 app.use(express.json());
 
+// Root route
+app.get('/', (_req, res) => {
+  res.json({
+    message: 'Academic Resource Hub API',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      auth: {
+        signup: 'POST /api/auth/signup',
+        login: 'POST /api/auth/login',
+        me: 'GET /api/auth/me',
+      },
+    },
+  });
+});
+
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: Date.now() });
 });
