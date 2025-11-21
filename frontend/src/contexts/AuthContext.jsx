@@ -5,7 +5,6 @@ const AuthContext = createContext(null);
 
 const STORAGE_KEYS = {
     user: 'academicHub_user',
-    users: 'academicHub_users', // Store all registered users
 };
 
 export const useAuth = () => {
@@ -50,36 +49,14 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         // Frontend-only login - any email/password works
         try {
-            const normalizedEmail = email.toLowerCase();
-            
-            // Check if user exists in stored users
-            const storedUsers = localStorage.getItem(STORAGE_KEYS.users);
-            let userData = null;
-            
-            if (storedUsers) {
-                try {
-                    const users = JSON.parse(storedUsers);
-                    userData = users.find(u => u.email === normalizedEmail);
-                } catch (e) {
-                    console.error('Failed to parse stored users:', e);
-                }
-            }
-            
-            // If user doesn't exist, create new one with visitor role
-            if (!userData) {
-                userData = {
-                    id: `user_${Date.now()}`,
-                    name: normalizedEmail.split('@')[0],
-                    email: normalizedEmail,
-                    role: 'visitor', // Default role for new logins
-                    createdAt: new Date().toISOString(),
-                };
-                
-                // Save to users list
-                const users = storedUsers ? JSON.parse(storedUsers) : [];
-                users.push(userData);
-                localStorage.setItem(STORAGE_KEYS.users, JSON.stringify(users));
-            }
+            // Generate a simple user object
+            const userData = {
+                id: `user_${Date.now()}`,
+                name: email.split('@')[0], // Use email prefix as name
+                email: email.toLowerCase(),
+                role: 'visitor', // Default role
+                createdAt: new Date().toISOString(),
+            };
 
             persistSession(userData);
             return { success: true, user: userData };
@@ -92,34 +69,13 @@ export const AuthProvider = ({ children }) => {
     const signup = async (name, email, password, role) => {
         // Frontend-only signup - any email/password works
         try {
-            const normalizedEmail = email.toLowerCase();
-            
-            // Check if user already exists
-            const storedUsers = localStorage.getItem(STORAGE_KEYS.users);
-            if (storedUsers) {
-                try {
-                    const users = JSON.parse(storedUsers);
-                    const existing = users.find(u => u.email === normalizedEmail);
-                    if (existing) {
-                        return { success: false, error: 'Email already registered' };
-                    }
-                } catch (e) {
-                    console.error('Failed to parse stored users:', e);
-                }
-            }
-            
             const userData = {
                 id: `user_${Date.now()}`,
                 name: name,
-                email: normalizedEmail,
+                email: email.toLowerCase(),
                 role: role || 'visitor',
                 createdAt: new Date().toISOString(),
             };
-
-            // Save to users list
-            const users = storedUsers ? JSON.parse(storedUsers) : [];
-            users.push(userData);
-            localStorage.setItem(STORAGE_KEYS.users, JSON.stringify(users));
 
             persistSession(userData);
             return { success: true, user: userData };
