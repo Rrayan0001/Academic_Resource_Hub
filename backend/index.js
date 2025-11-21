@@ -49,13 +49,17 @@ app.use('/api/auth', authRoutes);
 const startServer = async () => {
   try {
     await ensureDatabase();
-app.listen(PORT, () => {
-      console.log(`API server ready on http://localhost:${PORT}`);
-    });
+    console.log('Database connection established');
   } catch (error) {
-    console.error('Failed to start server:', error);
-    process.exit(1);
+    console.error('⚠️  Database connection failed:', error.message);
+    console.error('⚠️  Server will start but database operations will fail');
+    console.error('⚠️  Please update DATABASE_URL in .env file with your Neon connection string');
   }
+  
+  app.listen(PORT, () => {
+    console.log(`✅ API server ready on http://localhost:${PORT}`);
+    console.log(`📡 Health check: http://localhost:${PORT}/api/health`);
+  });
 };
 
 startServer();
