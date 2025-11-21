@@ -42,14 +42,13 @@ const sanitizeUser = (row) => ({
 });
 
 router.post('/signup', async (req, res) => {
-  try {
-    const parsed = signupSchema.safeParse(req.body);
+  const parsed = signupSchema.safeParse(req.body);
 
-    if (!parsed.success) {
-      return res
-        .status(400)
-        .json({ error: parsed.error.errors?.[0]?.message || 'Invalid payload' });
-    }
+  if (!parsed.success) {
+    return res
+      .status(400)
+      .json({ error: parsed.error.errors?.[0]?.message || 'Invalid payload' });
+  }
 
   const { name, email, password, role } = parsed.data;
   const normalizedEmail = email.toLowerCase();
