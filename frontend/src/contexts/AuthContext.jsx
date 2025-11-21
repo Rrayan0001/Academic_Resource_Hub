@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
     }, []);
 
-    const login = async (email, password) => {
+    const login = async (email, password, role = 'visitor') => {
         // Frontend-only login - any email/password works
         try {
             // Generate a simple user object
@@ -54,7 +54,7 @@ export const AuthProvider = ({ children }) => {
                 id: `user_${Date.now()}`,
                 name: email.split('@')[0], // Use email prefix as name
                 email: email.toLowerCase(),
-                role: 'visitor', // Default role
+                role: role || 'visitor', // Use selected role
                 createdAt: new Date().toISOString(),
             };
 

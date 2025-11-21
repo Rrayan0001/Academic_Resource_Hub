@@ -60,7 +60,7 @@ const Login = () => {
                 return;
             }
 
-            const result = await login(formData.email, formData.password);
+            const result = await login(formData.email, formData.password, role);
             if (result.success) {
                 navigate(getLandingPage(result.user.role));
             } else {
@@ -193,52 +193,51 @@ const Login = () => {
                     </button>
                 </div>
 
-                {mode === 'signup' && (
-                    <div style={{ marginBottom: '1.5rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.75rem', fontSize: '0.875rem', fontWeight: 500, color: 'var(--color-text)' }}>
-                            I am a:
-                        </label>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem' }}>
-                            {roles.map((r) => {
-                                const Icon = r.icon;
-                                const isSelected = role === r.value;
-                                return (
-                                    <button
-                                        key={r.value}
-                                        onClick={() => setRole(r.value)}
-                                        style={{
-                                            padding: '0.75rem',
-                                            borderRadius: '0.5rem',
-                                            border: `2px solid ${isSelected ? r.color : 'var(--color-border)'}`,
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            alignItems: 'center',
-                                            gap: '0.5rem',
-                                            transition: 'all 0.2s',
-                                            backgroundColor: isSelected ? `${r.color}15` : 'transparent',
-                                            color: isSelected ? r.color : 'var(--color-text-muted)',
-                                            cursor: 'pointer'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            if (!isSelected) {
-                                                e.currentTarget.style.borderColor = 'var(--color-primary)';
-                                                e.currentTarget.style.borderColor = `${r.color}80`;
-                                            }
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            if (!isSelected) {
-                                                e.currentTarget.style.borderColor = 'var(--color-border)';
-                                            }
-                                        }}
-                                    >
-                                        <Icon size={24} />
-                                        <span style={{ fontSize: '0.75rem', fontWeight: 500 }}>{r.label}</span>
-                                    </button>
-                                );
-                            })}
-                        </div>
+                {/* Role Selection - Show for both login and signup */}
+                <div style={{ marginBottom: '1.5rem' }}>
+                    <label style={{ display: 'block', marginBottom: '0.75rem', fontSize: '0.875rem', fontWeight: 500, color: 'var(--color-text)' }}>
+                        I am a:
+                    </label>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem' }}>
+                        {roles.map((r) => {
+                            const Icon = r.icon;
+                            const isSelected = role === r.value;
+                            return (
+                                <button
+                                    key={r.value}
+                                    type="button"
+                                    onClick={() => setRole(r.value)}
+                                    style={{
+                                        padding: '0.75rem',
+                                        borderRadius: '0.5rem',
+                                        border: `2px solid ${isSelected ? r.color : 'var(--color-border)'}`,
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        gap: '0.5rem',
+                                        transition: 'all 0.2s',
+                                        backgroundColor: isSelected ? `${r.color}15` : 'transparent',
+                                        color: isSelected ? r.color : 'var(--color-text-muted)',
+                                        cursor: 'pointer'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        if (!isSelected) {
+                                            e.currentTarget.style.borderColor = `${r.color}80`;
+                                        }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        if (!isSelected) {
+                                            e.currentTarget.style.borderColor = 'var(--color-border)';
+                                        }
+                                    }}
+                                >
+                                    <Icon size={24} />
+                                    <span style={{ fontSize: '0.75rem', fontWeight: 500 }}>{r.label}</span>
+                                </button>
+                            );
+                        })}
                     </div>
-                )}
+                </div>
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
