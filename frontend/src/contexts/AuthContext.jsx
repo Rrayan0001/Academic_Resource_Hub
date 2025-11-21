@@ -1,12 +1,10 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { apiFetch, API_BASE_URL } from '../lib/api';
 
 const AuthContext = createContext(null);
 
 const STORAGE_KEYS = {
     user: 'academicHub_user',
-    token: 'academicHub_token',
 };
 
 export const useAuth = () => {
@@ -32,62 +30,21 @@ export const AuthProvider = ({ children }) => {
             return null;
         }
     });
-    const [token, setToken] = useState(() => localStorage.getItem(STORAGE_KEYS.token));
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
 
-    const persistSession = (nextUser, nextToken) => {
+    const persistSession = (nextUser) => {
         setUser(nextUser);
-        setToken(nextToken);
         localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(nextUser));
-        localStorage.setItem(STORAGE_KEYS.token, nextToken);
     };
 
     const clearSession = () => {
         setUser(null);
-        setToken(null);
         localStorage.removeItem(STORAGE_KEYS.user);
-        localStorage.removeItem(STORAGE_KEYS.token);
     };
 
+    // No need to bootstrap session - user is already loaded from localStorage
     useEffect(() => {
-        const bootstrapSession = async () => {
-            const storedToken = localStorage.getItem(STORAGE_KEYS.token);
-
-            if (!storedToken) {
-                setLoading(false);
-                return;
-            }
-
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-
-                const response = await apiFetch('/api/auth/me', {
-                    headers: {
-                        Authorization: `Bearer ${storedToken}`,
-                    },
-                    signal: controller.signal,
-                });
-
-                clearTimeout(timeoutId);
-
-                if (!response.ok) {
-                    throw new Error('Session expired');
-                }
-
-                const data = await response.json();
-                persistSession(data.user, storedToken);
-            } catch (error) {
-                if (error.name !== 'AbortError') {
-                    console.error('Failed to restore session:', error);
-                }
-                clearSession();
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        bootstrapSession();
+        setLoading(false);
     }, []);
 
     const login = async (email, password) => {
