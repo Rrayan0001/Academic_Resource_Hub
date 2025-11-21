@@ -43,6 +43,8 @@ const Library = () => {
                             text="PROJECTS"
                             initialDelay={200}
                             letterAnimationDuration={800}
+                            letterInterval={200}
+                            repeatDelay={10000}
                             className="text-gradient"
                         />
                     </div>

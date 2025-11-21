@@ -1,23 +1,24 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BookOpen, Upload, LayoutDashboard, Search, Menu, X, LogOut, User } from 'lucide-react';
-import AdaptiveNavbar from './AdaptiveNavbar';
+import { BookOpen, Upload, LayoutDashboard, Menu, X, LogOut } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { AuthModalContext } from './Layout';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = React.useState(false);
-  const { showAuthModal, setShowAuthModal } = React.useContext(AuthModalContext);
   const location = useLocation();
   const { user, logout, isAuthenticated } = useAuth();
 
   const isActive = (path) => location.pathname === path;
 
   const navLinks = [
-    { path: '/library', label: 'Library', icon: BookOpen },
-    { path: '/upload', label: 'Upload', icon: Upload },
-    { path: '/dashboard', label: 'Faculty', icon: LayoutDashboard },
+    { path: '/library', label: 'Library', icon: BookOpen, roles: ['visitor', 'student', 'teacher'] },
+    { path: '/upload', label: 'Upload', icon: Upload, roles: ['student', 'teacher'] },
+    { path: '/dashboard', label: 'Faculty', icon: LayoutDashboard, roles: ['teacher'] },
   ];
+
+  const visibleLinks = user
+    ? navLinks.filter((link) => !link.roles || link.roles.includes(user.role))
+    : navLinks.filter((link) => link.path === '/library');
 
   const [isHovered, setIsHovered] = React.useState(false);
 
@@ -28,6 +29,11 @@ const Navbar = () => {
       case 'visitor': return '#10b981';
       default: return '#6b7280';
     }
+  };
+
+  const landingPath = () => {
+    if (!user) return '/';
+    return '/home'; // Logo always goes to landing page for authenticated users
   };
 
   return (
@@ -57,7 +63,7 @@ const Navbar = () => {
         gap: '2rem',
         width: '100%'
       }}>
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontWeight: 'bold', fontSize: '1.25rem' }}>
+        <Link to={landingPath()} style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontWeight: 'bold', fontSize: '1.25rem' }}>
           <div style={{
             width: '32px',
             height: '32px',
@@ -86,7 +92,7 @@ const Navbar = () => {
           }}
           className="desktop-nav-items"
         >
-          {navLinks.map((link) => (
+          {visibleLinks.map((link) => (
             <Link
               key={link.path}
               to={link.path}
@@ -182,13 +188,13 @@ const Navbar = () => {
               </button>
             </div>
           ) : (
-            <button
+            <Link
               className="btn btn-primary"
               style={{ padding: '0.5rem 1.5rem', borderRadius: 'var(--radius-full)' }}
-              onClick={() => setShowAuthModal(true)}
+              to="/"
             >
               Sign In
-            </button>
+            </Link>
           )}
         </div>
 
@@ -216,7 +222,7 @@ const Navbar = () => {
           gap: '1rem',
           borderRadius: 'var(--radius-lg)'
         }}>
-          {navLinks.map((link) => (
+          {visibleLinks.map((link) => (
             <Link
               key={link.path}
               to={link.path}

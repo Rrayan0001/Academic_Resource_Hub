@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import { cn } from "../lib/utils";
 
 const LetterState = {
@@ -14,6 +14,7 @@ export const MatrixText = ({
     initialDelay = 200,
     letterAnimationDuration = 500,
     letterInterval = 100,
+    repeatDelay = 0, // Delay before repeating animation (in ms)
 }) => {
     const [letters, setLetters] = useState(() =>
         text.split("").map((char) => ({
@@ -63,14 +64,25 @@ export const MatrixText = ({
     );
 
     const startAnimation = useCallback(() => {
-        if (isAnimating) return;
-
         setIsAnimating(true);
         let currentIndex = 0;
 
         const animate = () => {
             if (currentIndex >= text.length) {
                 setIsAnimating(false);
+                // If repeatDelay is set, restart animation after delay
+                if (repeatDelay > 0) {
+                    setTimeout(() => {
+                        // Reset letters to initial state
+                        setLetters(text.split("").map((char) => ({
+                            char,
+                            isMatrix: false,
+                            isSpace: char === " ",
+                        })));
+                        // Restart animation
+                        startAnimation();
+                    }, repeatDelay);
+                }
                 return;
             }
 
@@ -80,12 +92,12 @@ export const MatrixText = ({
         };
 
         animate();
-    }, [animateLetter, text, isAnimating, letterInterval]);
+    }, [animateLetter, text, letterInterval, repeatDelay]);
 
     useEffect(() => {
         const timer = setTimeout(startAnimation, initialDelay);
         return () => clearTimeout(timer);
-    }, []);
+    }, [startAnimation, initialDelay]);
 
     const motionVariants = useMemo(
         () => ({
@@ -108,7 +120,7 @@ export const MatrixText = ({
             <div className="flex items-center justify-center">
                 <div className="flex flex-wrap items-center justify-center">
                     {letters.map((letter, index) => (
-                        <motion.div
+                        <Motion.div
                             key={`${index}-${letter.char}`}
                             className="font-mono w-[1ch] text-center overflow-hidden"
                             initial="initial"
@@ -124,7 +136,7 @@ export const MatrixText = ({
                             }}
                         >
                             {letter.isSpace ? "\u00A0" : letter.char}
-                        </motion.div>
+                        </Motion.div>
                     ))}
                 </div>
             </div>

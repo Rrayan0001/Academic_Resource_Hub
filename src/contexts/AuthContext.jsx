@@ -1,6 +1,12 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext(null);
+
+const STORAGE_KEYS = {
+    user: 'academicHub_user',
+    token: 'academicHub_token',
+};
 
 export const useAuth = () => {
     const context = useContext(AuthContext);
@@ -11,80 +17,129 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState(() => {
+        const storedUser = localStorage.getItem(STORAGE_KEYS.user);
+        if (!storedUser) {
+            return null;
+        }
+
+        try {
+            return JSON.parse(storedUser);
+        } catch (error) {
+            console.error('Failed to parse stored user:', error);
+            localStorage.removeItem(STORAGE_KEYS.user);
+            return null;
+        }
+    });
+    const [token, setToken] = useState(() => localStorage.getItem(STORAGE_KEYS.token));
     const [loading, setLoading] = useState(true);
 
-    // Load user from localStorage on mount
-    useEffect(() => {
-        const storedUser = localStorage.getItem('academicHub_user');
-        if (storedUser) {
-            try {
-                setUser(JSON.parse(storedUser));
-            } catch (error) {
-                console.error('Failed to parse stored user:', error);
-                localStorage.removeItem('academicHub_user');
-            }
-        }
-        setLoading(false);
-    }, []);
-
-    const login = (email, password, role) => {
-        // In a real app, this would make an API call
-        // For now, we'll simulate authentication
-        const storedUsers = JSON.parse(localStorage.getItem('academicHub_users') || '[]');
-        const foundUser = storedUsers.find(
-            u => u.email === email && u.password === password && u.role === role
-        );
-
-        if (foundUser) {
-            const userWithoutPassword = { ...foundUser };
-            delete userWithoutPassword.password;
-            setUser(userWithoutPassword);
-            localStorage.setItem('academicHub_user', JSON.stringify(userWithoutPassword));
-            return { success: true };
-        }
-
-        return { success: false, error: 'Invalid credentials' };
+    const persistSession = (nextUser, nextToken) => {
+        setUser(nextUser);
+        setToken(nextToken);
+        localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(nextUser));
+        localStorage.setItem(STORAGE_KEYS.token, nextToken);
     };
 
-    const signup = (name, email, password, role) => {
-        // In a real app, this would make an API call
-        const storedUsers = JSON.parse(localStorage.getItem('academicHub_users') || '[]');
+    const clearSession = () => {
+        setUser(null);
+        setToken(null);
+        localStorage.removeItem(STORAGE_KEYS.user);
+        localStorage.removeItem(STORAGE_KEYS.token);
+    };
 
-        // Check if user already exists
-        if (storedUsers.find(u => u.email === email)) {
-            return { success: false, error: 'User already exists' };
-        }
+    useEffect(() => {
+        const bootstrapSession = async () => {
+            const storedToken = localStorage.getItem(STORAGE_KEYS.token);
 
-        // Create new user
-        const newUser = {
-            id: Date.now().toString(),
-            name,
-            email,
-            password, // In real app, this would be hashed on backend
-            role,
-            createdAt: new Date().toISOString()
+            if (!storedToken) {
+                setLoading(false);
+                return;
+            }
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+                const response = await fetch('/api/auth/me', {
+                    headers: {
+                        Authorization: `Bearer ${storedToken}`,
+                    },
+                    signal: controller.signal,
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error('Session expired');
+                }
+
+                const data = await response.json();
+                persistSession(data.user, storedToken);
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    console.error('Failed to restore session:', error);
+                }
+                clearSession();
+            } finally {
+                setLoading(false);
+            }
         };
 
-        storedUsers.push(newUser);
-        localStorage.setItem('academicHub_users', JSON.stringify(storedUsers));
+        bootstrapSession();
+    }, []);
 
-        // Auto-login after signup
-        const userWithoutPassword = { ...newUser };
-        delete userWithoutPassword.password;
-        setUser(userWithoutPassword);
-        localStorage.setItem('academicHub_user', JSON.stringify(userWithoutPassword));
+    const login = async (email, password) => {
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
+            });
 
-        return { success: true };
+            const data = await response.json();
+
+            if (!response.ok) {
+                return { success: false, error: data.error || 'Login failed' };
+            }
+
+            persistSession(data.user, data.token);
+            return { success: true, user: data.user };
+        } catch (error) {
+            console.error('Login error:', error);
+            return { success: false, error: 'Network error' };
+        }
+    };
+
+    const signup = async (name, email, password, role) => {
+        try {
+            const response = await fetch('/api/auth/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, password, role }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                return { success: false, error: data.error || 'Signup failed' };
+            }
+
+            persistSession(data.user, data.token);
+            return { success: true, user: data.user };
+        } catch (error) {
+            console.error('Signup error:', error);
+            return { success: false, error: 'Network error' };
+        }
     };
 
     const logout = () => {
-        setUser(null);
-        localStorage.removeItem('academicHub_user');
+        clearSession();
     };
 
     const value = {
         user,
+        token,
         loading,
         login,
         signup,

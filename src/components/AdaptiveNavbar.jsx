@@ -1,6 +1,8 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, useSpring, AnimatePresence } from 'framer-motion';
+import { motion as Motion, useSpring, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 /**
  * 3D Adaptive Navigation Pill
@@ -9,6 +11,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 const AdaptiveNavbar = ({ isParentHovered = false }) => {
     const navigate = useNavigate();
     const location = useLocation();
+    const { user, logout } = useAuth();
 
     // Map routes to IDs
     const getActiveSection = (pathname) => {
@@ -26,12 +29,23 @@ const AdaptiveNavbar = ({ isParentHovered = false }) => {
     const containerRef = useRef(null);
     const hoverTimeoutRef = useRef(null);
 
-    const navItems = [
-        { label: 'Home', id: 'home', path: '/' },
-        { label: 'Library', id: 'library', path: '/library' },
-        { label: 'Upload', id: 'upload', path: '/upload' },
-        { label: 'Faculty', id: 'faculty', path: '/dashboard' },
+    // Define all possible nav items
+    const allNavItems = [
+        { label: 'Library', id: 'library', path: '/library', roles: ['student', 'teacher', 'visitor'] },
+        { label: 'Upload', id: 'upload', path: '/upload', roles: ['student', 'teacher'] },
+        { label: 'Faculty', id: 'faculty', path: '/dashboard', roles: ['teacher'] },
     ];
+
+    // Filter items based on user role
+    const navItems = allNavItems.filter(item =>
+        user && item.roles.includes(user.role)
+    );
+
+    // Add Logout button
+    const handleLogout = () => {
+        logout();
+        navigate('/');
+    };
 
     // Update active section when location changes
     useEffect(() => {
@@ -48,7 +62,9 @@ const AdaptiveNavbar = ({ isParentHovered = false }) => {
 
         if (shouldExpand) {
             setExpanded(true);
-            pillWidth.set(450); // Adjusted width for 4 items
+            // Calculate width based on number of items + logout button
+            const itemCount = navItems.length + 1;
+            pillWidth.set(100 + (itemCount * 90));
             if (hoverTimeoutRef.current) {
                 clearTimeout(hoverTimeoutRef.current);
             }
@@ -64,7 +80,7 @@ const AdaptiveNavbar = ({ isParentHovered = false }) => {
                 clearTimeout(hoverTimeoutRef.current);
             }
         };
-    }, [hovering, isParentHovered, pillWidth]);
+    }, [hovering, isParentHovered, pillWidth, navItems.length]);
 
     const handleMouseEnter = () => {
         setHovering(true);
@@ -89,10 +105,10 @@ const AdaptiveNavbar = ({ isParentHovered = false }) => {
         }, 400);
     };
 
-    const activeItem = navItems.find(item => item.id === activeSection) || navItems[0];
+    const activeItem = navItems.find(item => item.id === activeSection) || navItems[0] || { label: 'Menu', id: 'menu' };
 
     return (
-        <motion.nav
+        <Motion.nav
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             className="relative rounded-full"
@@ -281,7 +297,7 @@ const AdaptiveNavbar = ({ isParentHovered = false }) => {
                 {!expanded && (
                     <div className="flex items-center relative">
                         <AnimatePresence mode="wait">
-                            <motion.span
+                            <Motion.span
                                 key={activeItem.id}
                                 initial={{ opacity: 0, y: 8, filter: 'blur(4px)' }}
                                 animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
@@ -308,19 +324,19 @@ const AdaptiveNavbar = ({ isParentHovered = false }) => {
                                 }}
                             >
                                 {activeItem.label}
-                            </motion.span>
+                            </Motion.span>
                         </AnimatePresence>
                     </div>
                 )}
 
                 {/* Expanded state - show all sections with stagger */}
                 {expanded && (
-                    <div className="flex items-center justify-evenly w-full">
+                    <div className="flex items-center justify-evenly w-full gap-2">
                         {navItems.map((item, index) => {
                             const isActive = item.id === activeSection
 
                             return (
-                                <motion.button
+                                <Motion.button
                                     key={item.id}
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
@@ -390,13 +406,42 @@ const AdaptiveNavbar = ({ isParentHovered = false }) => {
                                     }}
                                 >
                                     {item.label}
-                                </motion.button>
+                                </Motion.button>
                             )
                         })}
+
+                        {/* Logout Button */}
+                        <Motion.button
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -10 }}
+                            transition={{
+                                delay: navItems.length * 0.08,
+                                duration: 0.25,
+                                ease: 'easeOut'
+                            }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleLogout();
+                            }}
+                            className="relative cursor-pointer transition-all duration-200 text-red-500 hover:text-red-600"
+                            style={{
+                                fontSize: '15px',
+                                fontWeight: 510,
+                                background: 'transparent',
+                                border: 'none',
+                                padding: '10px 16px',
+                                outline: 'none',
+                                whiteSpace: 'nowrap',
+                                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "SF Pro Display", Poppins, sans-serif',
+                            }}
+                        >
+                            Logout
+                        </Motion.button>
                     </div>
                 )}
             </div>
-        </motion.nav>
+        </Motion.nav>
     );
 };
 
