@@ -1,25 +1,29 @@
 # Vercel Deployment Setup
 
-## Option 1: Set Root Directory in Vercel Dashboard (Recommended)
+## ⚠️ IMPORTANT: Set Root Directory in Vercel Dashboard
+
+**You MUST set the Root Directory in Vercel settings for this to work.**
+
+### Step-by-Step Instructions:
 
 1. Go to your Vercel project dashboard: https://vercel.com
 2. Click on your project: **Academic Resource Hub**
-3. Go to **Settings** tab
-4. Scroll down to **Root Directory**
-5. Click **Edit**
-6. Set it to: `frontend`
-7. Click **Save**
+3. Go to **Settings** tab (gear icon)
+4. Scroll down to **General** section
+5. Find **Root Directory**
+6. Click **Edit** (pencil icon)
+7. Enter: `frontend`
+8. Click **Save**
 
-This tells Vercel to treat the `frontend/` folder as the root of your application.
+**This is REQUIRED** - Vercel needs to know that your frontend code is in the `frontend/` folder.
 
-## Option 2: Use vercel.json Configuration
+After setting this:
+- Vercel will automatically detect `frontend/package.json`
+- It will run `npm install` in the `frontend/` directory
+- It will run `npm run build` in the `frontend/` directory
+- It will use `frontend/dist` as the output directory
 
-The `vercel.json` file in the root directory tells Vercel:
-- Build command: `cd frontend && npm install && npm run build`
-- Output directory: `frontend/dist`
-- Install command: `cd frontend && npm install`
-
-Vercel should automatically detect and use this configuration.
+The `vercel.json` file will work once the root directory is set to `frontend`.
 
 ## Environment Variables
 
