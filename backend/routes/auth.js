@@ -42,13 +42,14 @@ const sanitizeUser = (row) => ({
 });
 
 router.post('/signup', async (req, res) => {
-  const parsed = signupSchema.safeParse(req.body);
+  try {
+    const parsed = signupSchema.safeParse(req.body);
 
-  if (!parsed.success) {
-    return res
-      .status(400)
-      .json({ error: parsed.error.errors?.[0]?.message || 'Invalid payload' });
-  }
+    if (!parsed.success) {
+      return res
+        .status(400)
+        .json({ error: parsed.error.errors?.[0]?.message || 'Invalid payload' });
+    }
 
   const { name, email, password, role } = parsed.data;
   const normalizedEmail = email.toLowerCase();
@@ -82,7 +83,10 @@ router.post('/signup', async (req, res) => {
     return res.status(201).json({ token, user });
   } catch (error) {
     console.error('[auth:signup] failed', error);
-    return res.status(500).json({ error: 'Unable to create account' });
+    return res.status(500).json({ 
+      error: 'Unable to create account',
+      message: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
@@ -120,7 +124,10 @@ router.post('/login', async (req, res) => {
     return res.json({ token, user });
   } catch (error) {
     console.error('[auth:login] failed', error);
-    return res.status(500).json({ error: 'Unable to login' });
+    return res.status(500).json({ 
+      error: 'Unable to login',
+      message: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
