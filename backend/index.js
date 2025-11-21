@@ -32,9 +32,13 @@ app.use(
         return callback(null, true);
       }
       
+      // Log CORS rejection for debugging
+      console.warn(`⚠️  CORS blocked origin: ${origin}. Allowed origins:`, CLIENT_ORIGINS);
       callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   }),
 );
 
