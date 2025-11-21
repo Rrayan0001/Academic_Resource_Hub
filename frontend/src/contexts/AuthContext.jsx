@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { apiFetch, API_BASE_URL } from '../lib/api';
 
 const AuthContext = createContext(null);
 
@@ -61,7 +62,7 @@ export const AuthProvider = ({ children }) => {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
 
-                const response = await fetch('/api/auth/me', {
+                const response = await apiFetch('/api/auth/me', {
                     headers: {
                         Authorization: `Bearer ${storedToken}`,
                     },
@@ -91,9 +92,8 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (email, password) => {
         try {
-            const response = await fetch('/api/auth/login', {
+            const response = await apiFetch('/api/auth/login', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),
             });
 
@@ -113,9 +113,8 @@ export const AuthProvider = ({ children }) => {
 
     const signup = async (name, email, password, role) => {
         try {
-            const response = await fetch('/api/auth/signup', {
+            const response = await apiFetch('/api/auth/signup', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, email, password, role }),
             });
 

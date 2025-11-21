@@ -1,16 +1,112 @@
-# React + Vite
+# Academic Resource Hub
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A collaborative platform where students showcase their projects, share knowledge, and inspire the next generation of innovators.
 
-Currently, two official plugins are available:
+## Project Structure
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+This project is split into two separate parts that can be deployed independently:
 
-## React Compiler
+- **Frontend** - React + Vite application (see `frontend/` directory)
+- **Backend** - Express API server (see `backend/` directory)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Frontend Setup
 
-## Expanding the ESLint configuration
+1. Navigate to the frontend directory:
+```bash
+cd frontend
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Create a `.env` file:
+```bash
+cp .env.example .env
+```
+
+4. Update `.env` with your backend API URL:
+```
+VITE_API_URL=http://localhost:5001
+```
+
+For production, set this to your deployed backend URL:
+```
+VITE_API_URL=https://your-backend-api.com
+```
+
+## Running Frontend
+
+1. Navigate to the frontend directory:
+```bash
+cd frontend
+```
+
+2. Run development server:
+```bash
+npm run dev
+```
+
+3. Build for production:
+```bash
+npm run build
+```
+
+The built files will be in the `frontend/dist/` directory.
+
+## Backend Setup
+
+1. Navigate to the backend directory:
+```bash
+cd backend
+```
+
+2. See the [backend README](./backend/README.md) for detailed setup instructions.
+
+## Deployment
+
+### Frontend Deployment
+The frontend can be deployed to any static hosting service:
+- Vercel
+- Netlify
+- GitHub Pages
+- AWS S3 + CloudFront
+- etc.
+
+Make sure to set the `VITE_API_URL` environment variable in your hosting platform.
+
+### Backend Deployment
+The backend can be deployed to:
+- Railway
+- Render
+- Heroku
+- AWS EC2/Lambda
+- DigitalOcean
+- etc.
+
+See `backend/README.md` for backend-specific deployment instructions.
+
+## Features
+
+- 🔐 Authentication with JWT
+- 👥 Role-based access (Student, Teacher, Visitor)
+- 📚 Project library
+- 📤 Project upload
+- 🎓 Faculty dashboard
+- 🎨 Modern, responsive UI
+
+## Tech Stack
+
+### Frontend
+- React 19
+- Vite
+- React Router
+- Framer Motion
+- Lucide Icons
+
+### Backend
+- Express.js
+- Neon PostgreSQL
+- JWT Authentication
+- bcryptjs
