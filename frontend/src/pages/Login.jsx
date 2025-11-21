@@ -36,12 +36,7 @@ const Login = () => {
                 return;
             }
             
-            // Email domain validation for student and teacher
-            const emailLower = formData.email.toLowerCase();
-            if ((role === 'student' || role === 'teacher') && !emailLower.endsWith('@bmsit.in')) {
-                setError('Student and teacher accounts must use @bmsit.in email domain');
-                return;
-            }
+            // Email domain validation removed - any email works now
             
             if (formData.password !== formData.confirmPassword) {
                 setError('Passwords do not match');

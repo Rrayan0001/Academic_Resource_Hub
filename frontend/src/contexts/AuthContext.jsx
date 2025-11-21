@@ -42,50 +42,46 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem(STORAGE_KEYS.user);
     };
 
-    // No need to bootstrap session - user is already loaded from localStorage
     useEffect(() => {
         setLoading(false);
     }, []);
 
     const login = async (email, password) => {
+        // Frontend-only login - any email/password works
         try {
-            const response = await apiFetch('/api/auth/login', {
-                method: 'POST',
-                body: JSON.stringify({ email, password }),
-            });
+            // Generate a simple user object
+            const userData = {
+                id: `user_${Date.now()}`,
+                name: email.split('@')[0], // Use email prefix as name
+                email: email.toLowerCase(),
+                role: 'visitor', // Default role
+                createdAt: new Date().toISOString(),
+            };
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                return { success: false, error: data.error || 'Login failed' };
-            }
-
-            persistSession(data.user, data.token);
-            return { success: true, user: data.user };
+            persistSession(userData);
+            return { success: true, user: userData };
         } catch (error) {
             console.error('Login error:', error);
-            return { success: false, error: 'Network error' };
+            return { success: false, error: 'Login failed' };
         }
     };
 
     const signup = async (name, email, password, role) => {
+        // Frontend-only signup - any email/password works
         try {
-            const response = await apiFetch('/api/auth/signup', {
-                method: 'POST',
-                body: JSON.stringify({ name, email, password, role }),
-            });
+            const userData = {
+                id: `user_${Date.now()}`,
+                name: name,
+                email: email.toLowerCase(),
+                role: role || 'visitor',
+                createdAt: new Date().toISOString(),
+            };
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                return { success: false, error: data.error || 'Signup failed' };
-            }
-
-            persistSession(data.user, data.token);
-            return { success: true, user: data.user };
+            persistSession(userData);
+            return { success: true, user: userData };
         } catch (error) {
             console.error('Signup error:', error);
-            return { success: false, error: 'Network error' };
+            return { success: false, error: 'Signup failed' };
         }
     };
 
@@ -95,7 +91,6 @@ export const AuthProvider = ({ children }) => {
 
     const value = {
         user,
-        token,
         loading,
         login,
         signup,
